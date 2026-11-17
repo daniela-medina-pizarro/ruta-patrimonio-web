@@ -1,7 +1,12 @@
+import { useMemo, useState } from 'react'
+
 /** Category form and list. Place and event relationships are enforced by the API. */
 export default function CategorySection({
   categories, form, saving, loading, onFieldChange, onSubmit, onDelete,
 }) {
+  const [query, setQuery] = useState('')
+  const visibleCategories = useMemo(() => categories.filter((item) => `${item.nombre} ${item.descripcion}`.toLowerCase().includes(query.trim().toLowerCase())), [categories, query])
+
   return (
     <section className="panel" aria-labelledby="categories-title">
       <div className="section-heading">
@@ -38,9 +43,10 @@ export default function CategorySection({
 
       <div className="list-block">
         <h3>Categorías registradas</h3>
+        <label htmlFor="category-search">Buscar categoría<input id="category-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Nombre o descripción" /></label>
         {categories.length === 0 && !loading && <p className="empty">Aún no hay categorías.</p>}
         <ul className="category-list">
-          {categories.map((category) => (
+          {visibleCategories.map((category) => (
             <li key={category.id} className="category-row">
               <div>
                 <strong>{category.nombre}</strong>
