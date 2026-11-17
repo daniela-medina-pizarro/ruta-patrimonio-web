@@ -1,7 +1,13 @@
+import { useMemo, useState } from 'react'
+
 /** Category form and list. Place and event relationships are enforced by the API. */
 export default function CategorySection({
   categories, form, saving, loading, onFieldChange, onSubmit, onDelete,
 }) {
+  const [query, setQuery] = useState('')
+  const [sortDirection, setSortDirection] = useState('asc')
+  const visibleCategories = useMemo(() => categories.filter((item) => `${item.nombre} ${item.descripcion}`.toLowerCase().includes(query.trim().toLowerCase())).sort((a, b) => sortDirection === 'asc' ? a.nombre.localeCompare(b.nombre, 'es') : b.nombre.localeCompare(a.nombre, 'es')), [categories, query, sortDirection])
+
   return (
     <section className="panel" aria-labelledby="categories-title">
       <div className="section-heading">
@@ -38,9 +44,13 @@ export default function CategorySection({
 
       <div className="list-block">
         <h3>Categorías registradas</h3>
+        <label htmlFor="category-search">Buscar categoría<input id="category-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Nombre o descripción" /></label>
+        <label htmlFor="category-sort">Orden<select id="category-sort" value={sortDirection} onChange={(event) => setSortDirection(event.target.value)}><option value="asc">Nombre A–Z</option><option value="desc">Nombre Z–A</option></select></label>
         {categories.length === 0 && !loading && <p className="empty">Aún no hay categorías.</p>}
+        <button type="button" className="button button-secondary" onClick={() => { setQuery(''); setSortDirection('asc') }}>Restablecer búsqueda y orden</button>
+        <p className="hint" aria-live="polite">Mostrando {visibleCategories.length} de {categories.length} categorías.</p>
         <ul className="category-list">
-          {categories.map((category) => (
+          {visibleCategories.map((category) => (
             <li key={category.id} className="category-row">
               <div>
                 <strong>{category.nombre}</strong>
@@ -58,6 +68,7 @@ export default function CategorySection({
             </li>
           ))}
         </ul>
+        {categories.length > 0 && visibleCategories.length === 0 && <p className="empty">No hay categorías que coincidan con la búsqueda.</p>}
       </div>
     </section>
   )
